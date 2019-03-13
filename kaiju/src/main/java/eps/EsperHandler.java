@@ -8,6 +8,7 @@ import com.espertech.esper.client.EPRuntime;
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
 
+import collector.Config;
 import eventsocket.Event;
 import eventsocket.FLog;
 import eventsocket.Metric;
@@ -18,9 +19,10 @@ import mode.Mode;
  */
 public class EsperHandler {
 	
-	public static String RETENTION_TIME = "2min";
+	public static Config config;
 	public static Mode MODE;	
 	public static EPRuntime cepRT;
+	
 	public static EPAdministrator cepAdm;
 	
 	/**
@@ -43,7 +45,7 @@ public class EsperHandler {
 		    cepRT = cep.getEPRuntime();
 		    cepAdm = cep.getEPAdministrator();
 		    
-		    MODE.addStatements(cepAdm, true);
+		    MODE.addStatements(cepAdm, config.parse);
 		   
 		}
 	    

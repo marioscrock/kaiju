@@ -8,10 +8,13 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.beust.jcommander.JCommander;
+
 import eps.EsperHandler;
 import mode.HLMode;
 import mode.LogsMode;
 import mode.MetricsMode;
+import mode.Mode;
 import mode.TracesMode;
 
 /**
@@ -26,37 +29,24 @@ public class Collector {
 	
 	public static ThreadPoolExecutor executor;	
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String... argv) throws InterruptedException {
 		
-		//SET MODE Esper		
-		if(args.length < 1) {
+		Config config = new Config();
+        JCommander.newBuilder()
+            .addObject(config)
+            .build()
+            .parse(argv);
+		
+		if (getMode(config) == null) {
 			log.error("Specify mode to instantiate the Kaiju instance");
 			return;
 		}
-		
-		switch (args[0]) {
-		case "metrics":
-			EsperHandler.MODE = new MetricsMode();
-			break;
-		case "logs":
-			EsperHandler.MODE = new LogsMode();
-			break;
-		case "traces-api":
-			EsperHandler.MODE = new TracesMode(true);
-			break;
-		case "high-level":
-			EsperHandler.MODE = new HLMode();
-			break;
-		default:
-			EsperHandler.MODE = new TracesMode(false); //Default
-			break;
-		}
 		log.info("Esper mode set: " + EsperHandler.MODE.toString());
+		log.info("Esper retention time set: " + config.retentionTime);
+		log.info("Parse boolean set: " + config.parse);
 		
-		//Set retention time Esper
-		if(args.length > 1)
-			EsperHandler.RETENTION_TIME = args[1];
-		log.info("Esper retention time set: " + EsperHandler.RETENTION_TIME);
+		//Set parsed config to Esper
+		EsperHandler.config = config;
 
     	//Executors to handle incoming requests
     	BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
@@ -65,6 +55,25 @@ public class Collector {
     	log.info("Executors pool initialised");
 		
     	EsperHandler.MODE.init();
+		
+	}
+	
+	private static Mode getMode(Config config) {
+		
+		switch (config.mode) {
+		case "metrics":
+			return EsperHandler.MODE = new MetricsMode();
+		case "logs":
+			return EsperHandler.MODE = new LogsMode();
+		case "traces":
+			return EsperHandler.MODE = new TracesMode(false);
+		case "traces-api":
+			return EsperHandler.MODE = new TracesMode(true);
+		case "high-level":
+			return EsperHandler.MODE = new HLMode();
+		default:
+			return null;
+		}
 		
 	}
 

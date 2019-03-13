@@ -74,9 +74,9 @@ public class TracesMode implements Mode {
 
 	@Override
 	public void addStatements(EPAdministrator cepAdm, boolean parse) {		
-		EsperStatements.defaultStatementsTraces(cepAdm, EsperHandler.RETENTION_TIME);
+		EsperStatements.defaultStatementsTraces(cepAdm);
 		if (parse)
-			StatementParser.parseStatements(cepAdm, "./stmts/statements.txt", EsperHandler.RETENTION_TIME);
+			StatementParser.parseStatements(cepAdm, "./stmts/statements.txt", EsperHandler.config);
 		
 		if (api) {		
 			Thread APIThread = new Thread(new Runnable() {

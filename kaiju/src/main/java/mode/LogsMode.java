@@ -23,9 +23,9 @@ public class LogsMode implements Mode {
 
 	@Override
 	public void addStatements(EPAdministrator cepAdm, boolean parse) {
-		EsperStatements.defaultStatementsLogs(cepAdm, EsperHandler.RETENTION_TIME);
+		EsperStatements.defaultStatementsLogs(cepAdm);
 		if (parse)
-			StatementParser.parseStatements(cepAdm, "./stmts/statements.txt", EsperHandler.RETENTION_TIME);
+			StatementParser.parseStatements(cepAdm, "./stmts/statements.txt", EsperHandler.config);
 	}
 	
 	@Override

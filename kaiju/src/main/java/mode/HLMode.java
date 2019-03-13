@@ -25,7 +25,7 @@ public class HLMode implements Mode {
 		EPLFactory.parseHLEvents(cepAdm, "./stmts/events.txt");
 		
 		if (parse)
-			StatementParser.parseStatements(cepAdm, "./stmts/statements.txt", EsperHandler.RETENTION_TIME);
+			StatementParser.parseStatements(cepAdm, "./stmts/statements.txt", EsperHandler.config);
 				
 	}
 	

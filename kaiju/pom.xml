@@ -3,7 +3,7 @@
   <groupId>groupId</groupId>
   <artifactId>kaiju</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>kaiju-collector</name>
+  <name>kaiju</name>
   <build>
     <plugins>
       <plugin>
@@ -86,5 +86,10 @@
 		<artifactId>json-flattener</artifactId>
 		<version>0.6.0</version>
 	</dependency>
+	<dependency>
+	 <groupId>com.beust</groupId>
+	 <artifactId>jcommander</artifactId>
+	 <version>1.72</version>
+  	</dependency>
   </dependencies>
 </project>

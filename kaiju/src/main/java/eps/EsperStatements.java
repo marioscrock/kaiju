@@ -62,56 +62,6 @@ public class EsperStatements {
 	}
 	
 	/**
-	 * Define a table storing the mean duration and Welford's Online algorithm coefficients per each operation 
-	 * {@code (serviceName string primary key, operationName string primary key, meanDuration double, m2 double, counter long)}
-	 * @param cepAdm {@link com.espertech.esper.client.EPAdministrator EPAdministrator} of the Esper engine.
-	 */
-	public static void defineMeanDurationPerOperationTable(EPAdministrator cepAdm) {
-		
-		cepAdm.createEPL("create table MeanDurationPerOperation (serviceName string primary key, operationName string primary key,"
-	    		+ " meanDuration double, m2 double, counter long)");
-	    cepAdm.createEPL("on SpansWindow s"
-	    		+ " merge MeanDurationPerOperation m"
-	    		+ " where s.serviceName = m.serviceName and s.span.operationName = m.operationName"
-	    		+ " when matched"
-	    		+ " then update set counter = (initial.counter + 1), "
-	    		+ " meanDuration = (initial.meanDuration + ((span.duration - initial.meanDuration)/counter)),"
-	    		+ " m2 = (initial.m2 + (span.duration - meanDuration)*(span.duration - initial.meanDuration))"
-	    		+ " when not matched"
-	    		+ " then insert select s.serviceName as serviceName, s.span.operationName as operationName,"
-	    		+ " s.span.duration as meanDuration, 0 as m2, 1 as counter");
-	    
-	}
-	
-	/**
-	 * Define a table storing the mean duration and Welford's Online algorithm coefficients per each operation 
-	 * {@code (serviceName string primary key, operationName string primary key, meanDuration double, m2 double, counter long)}.
-	 * It resets the counter of each row when the value exceeds {@code resetValueInt}.
-	 * @param cepAdm {@link com.espertech.esper.client.EPAdministrator EPAdministrator} of the Esper engine.
-	 * @param resetValue The maximum value for the counter. If higher, reset the counter.
-	 */
-	public static void defineMeanDurationPerOperationTableResetCounter(EPAdministrator cepAdm, String resetValue) {
-	    
-		cepAdm.createEPL("create table MeanDurationPerOperation (serviceName string primary key, operationName string primary key,"
-	    		+ " meanDuration double, m2 double, counter long)");
-	    cepAdm.createEPL("on SpansWindow s"
-	    		+ " merge MeanDurationPerOperation m"
-	    		+ " where s.serviceName = m.serviceName and s.span.operationName = m.operationName"
-	    		+ " when matched and counter <= " + resetValue
-	    		+ " then update set counter = (initial.counter + 1), "
-	    		+ " meanDuration = (initial.meanDuration + ((span.duration - initial.meanDuration)/counter)),"
-	    		+ " m2 = (initial.m2 + (span.duration - meanDuration)*(span.duration - initial.meanDuration))"
-	       		+ " when matched and counter > " + resetValue
-	    		+ " then update set counter = 1,"
-	    		+ " meanDuration = s.span.duration,"
-	    		+ " m2 = 0"
-	    		+ " when not matched"
-	    		+ " then insert select s.serviceName as serviceName, s.span.operationName as operationName,"
-	    		+ " s.span.duration as meanDuration, 0 as m2, 1 as counter");
-
-	}
-	
-	/**
 	 * Define a named window storing traceIds of traces to be saved {@code (traceId string)} and all the rules 
 	 * to populate the window.
 	 * @param cepAdm {@link com.espertech.esper.client.EPAdministrator EPAdministrator} of the Esper engine.
@@ -151,23 +101,26 @@ public class EsperStatements {
 	/**
 	 * Default statements for Traces mode.
 	 * @param cepAdm {@link com.espertech.esper.client.EPAdministrator EPAdministrator} of the Esper engine.
-	 * @param retentionTime Retention time of Esper.
 	 */
-	public static void defaultStatementsTraces(EPAdministrator cepAdm, String retentionTime) {
-		
-		//Event for traces sampling
-		cepAdm.createEPL("create schema TraceAnomaly(traceId string)");
+	public static void defaultStatementsTraces(EPAdministrator cepAdm) {
 		
 		EsperStatements.reportHLEvents(cepAdm);
+		
+		if (EsperHandler.config.mode.equals("traces-api")) {
+			String retentionTime = EsperHandler.config.retentionTime;
+			defineTracesWindow(cepAdm, retentionTime);
+			defineProcessesTable(cepAdm);
+			defineSpansWindow(cepAdm, retentionTime);
+			defineDependenciesWindow(cepAdm, retentionTime);
+		}
 		
 	}
 
 	/**
 	 * Default statements for Metrics mode.
 	 * @param cepAdm {@link com.espertech.esper.client.EPAdministrator EPAdministrator} of the Esper engine.
-	 * @param retentionTime Retention time of Esper.
 	 */
-	public static void defaultStatementsMetrics(EPAdministrator cepAdm, String retentionTime) {
+	public static void defaultStatementsMetrics(EPAdministrator cepAdm) {
 		
 //		DEBUG STATEMENT
 //	    EPStatement cepMetrics = cepAdm.createEPL("select * from Metric"); 
@@ -182,7 +135,7 @@ public class EsperStatements {
 	 * @param cepAdm {@link com.espertech.esper.client.EPAdministrator EPAdministrator} of the Esper engine.
 	 * @param retentionTime Retention time of Esper.
 	 */
-	public static void defaultStatementsLogs(EPAdministrator cepAdm, String retentionTime) {
+	public static void defaultStatementsLogs(EPAdministrator cepAdm) {
 		
 //		DEBUG STATEMENT
 //		EPStatement cepFLogs = cepAdm.createEPL("select * from FLog"); 

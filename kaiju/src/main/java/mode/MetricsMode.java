@@ -23,9 +23,9 @@ public class MetricsMode implements Mode {
 	
 	@Override
 	public void addStatements(EPAdministrator cepAdm, boolean parse) {			
-		EsperStatements.defaultStatementsMetrics(cepAdm, EsperHandler.RETENTION_TIME);
+		EsperStatements.defaultStatementsMetrics(cepAdm);
 		if (parse)
-			StatementParser.parseStatements(cepAdm, "./stmts/statements.txt", EsperHandler.RETENTION_TIME);
+			StatementParser.parseStatements(cepAdm, "./stmts/statements.txt", EsperHandler.config);
 	}
 	
 	@Override
