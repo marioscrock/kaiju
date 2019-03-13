@@ -1,0 +1,7 @@
+Anomaly
+TraceAnomaly>{traceId:string}>>{Anomaly}
+HighLatencySpan>{operationName:string,spanId:string,traceId:string,duration:long}>{serviceName:string,startTime:long,node:string,pod:string,namespace:string}>{TraceAnomaly}
+ContainerAnomaly>{container:string}>{namespace:string}>{Anomaly}
+ContainerHighCPUUsage>{container:string,highUsage:float}>{cpuLimit:float,pod:string,namespace:string}>{ContainerAnomaly}
+KubeEvent
+PulledImageEvent>{pulledImage:string}>{namespace:string}>{KubeEvent}

@@ -1,0 +1,135 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf
+  namespace: monitoring
+  labels:
+    k8s-app: telegraf
+data:
+  telegraf.conf: |+
+    [agent]
+      hostname = "$HOSTNAME"
+    [[outputs.socket_writer]]
+      address = "tcp://kaiju-metrics.default:9876"
+      keep_alive_period = "5m"
+      data_format = "json"
+      json_timestamp_units = "1ms"    
+    [[inputs.prometheus]]
+      monitor_kubernetes_pods = true
+      [inputs.prometheus.tags]
+        plugin = "kubernetes_pods"
+    [[inputs.prometheus]]
+      kubernetes_services = ["http://kube-state-metrics:8081/metrics", "http://kube-state-metrics:8082/metrics"]
+      [inputs.prometheus.tags]
+        plugin = "kube-state-metrics"
+    [[inputs.prometheus]]
+      kubernetes_services = ["http://node-exporter:9100/metrics"]
+      [inputs.prometheus.tags]
+        plugin = "node-exporter"
+    [[inputs.prometheus]]
+      kubernetes_services = ["http://kube-controller-manager.kube-system:10252/metrics"]
+      [inputs.prometheus.tags]
+        plugin = "kube-controller-manager"
+    [[inputs.prometheus]]
+      kubernetes_services = ["http://coredns.kube-system:9153/metrics"]
+      [inputs.prometheus.tags]
+        plugin = "coredns"
+    [[inputs.prometheus]]
+      kubernetes_services = ["http://kube-scheduler.kube-system:10251/metrics"]
+      [inputs.prometheus.tags]
+        plugin = "kube-scheduler"
+    [[inputs.prometheus]]
+      kubernetes_services = ["https://etcd.kube-system:2379/metrics"]
+      tls_ca = "/etc/kubernetes/pki/apiserver-etcd-client.crt"
+      tls_cert = "/etc/kubernetes/pki/apiserver-etcd-client.crt"
+      tls_key = "/etc/kubernetes/pki/apiserver-etcd-client.key"
+      response_timeout = "10s"
+      insecure_skip_verify = true
+      [inputs.prometheus.tags]
+        plugin = "etcd-https"
+    [[inputs.prometheus]]
+      kubernetes_services = ["https://kube-apiserver.kube-system:6443/metrics"]
+      bearer_token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      tls_ca = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+      insecure_skip_verify = true
+      [inputs.prometheus.tags]
+        plugin = "kube-apiserver"
+    [[inputs.prometheus]]
+      kubernetes_services = ["http://fluentd.logging:24231/metrics"]
+      [inputs.prometheus.tags]
+        plugin = "fluentd"        
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: telegraf
+  labels:
+    app: telegraf
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: telegraf
+    spec:
+      serviceAccount: telegraf
+      serviceAccountName: telegraf
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+      containers:
+      - name: telegraf
+        image: docker.io/telegraf:1.9.1
+        resources:
+          limits:
+            memory: 500Mi
+          requests:
+            cpu: 500m
+            memory: 500Mi
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: HOSTIP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: "HOST_PROC"
+          value: "/rootfs/proc"
+        - name: "HOST_SYS"
+          value: "/rootfs/sys"
+        volumeMounts:
+        - name: varrunutmpro
+          mountPath: /var/run/utmp
+          readOnly: true
+        - name: sysro
+          mountPath: /rootfs/sys
+          readOnly: true
+        - name: procro
+          mountPath: /rootfs/proc
+          readOnly: true
+        - name: pki
+          mountPath: /etc/kubernetes/pki/
+          readOnly: true
+        - name: config
+          mountPath: /etc/telegraf
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: sysro
+        hostPath:
+          path: /sys
+      - name: procro
+        hostPath:
+          path: /proc
+      - name: varrunutmpro
+        hostPath:
+          path: /var/run/utmp
+      - name: pki
+        hostPath:
+          path: /etc/kubernetes/pki
+      - name: config
+        configMap:
+          name: telegraf

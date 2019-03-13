@@ -1,0 +1,59 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kaiju-hl
+  labels:
+    app: kaiju
+    kaiju-infra: kaiju-hl-deployment
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: kaiju
+        kaiju-infra: kaiju-hl-pod
+    spec:
+      containers:
+      - image: kaiju:v1.0
+        name: kaiju-hl
+        command: ["java"]
+        args: ["-jar","/usr/app/kaiju-0.0.1-SNAPSHOT-jar-with-dependencies.jar","high-level","1min"]
+        ports:
+        - containerPort: 9876
+          protocol: TCP
+        volumeMounts:
+          - name: stmts-volume
+            mountPath: /stmts
+        env:
+        - name: JAVA_OPTS
+          value: "-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+        resources:
+          requests:
+            memory: "250Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+      volumes:
+        - name: stmts-volume
+          configMap:
+            name: kaiju-hl-stmts
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kaiju-hl
+  labels:
+    app: kaiju
+    kaiju-infra: kaiju-hl-service
+spec:
+  ports:
+  - name: kaiju-hl-socket
+    port: 9876
+    protocol: TCP
+    targetPort: 9876
+  selector:
+    kaiju-infra: kaiju-hl-pod
+  type: ClusterIP

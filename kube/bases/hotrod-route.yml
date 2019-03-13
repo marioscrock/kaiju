@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hotrod-route
+  labels:
+    app: hotrod
+    hotrod-infra: route-service
+spec:
+  ports:
+  - name: route-service
+    port: 8083
+    protocol: TCP
+    targetPort: 8083
+  selector:
+    hotrod-infra: route-pod
+  type: ClusterIP
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: hotrod-route
+  labels:
+    app: hotrod
+    hotrod-infra: route-deployment
+spec:
+  replicas: 3
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: hotrod
+        hotrod-infra: route-pod
+    spec:
+      containers:
+      - image: rim:hotrod-kube-v1.0
+        name: hotrod-route
+        command:
+        - ./main
+        args:
+        - --jaeger-agent.host-port=localhost:6831
+        - route
+        - --bind=0.0.0.0
+        - $(CONFIG)
+        ports:
+        - containerPort: 8083
+          protocol: TCP
+        env:
+        - name: CONFIG
+          valueFrom:
+            configMapKeyRef:
+              name: config-hotrod
+              key: config-route
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      - image: kaiju-agent:kaiju
+        name: jaeger-agent
+        command:
+        - ./main
+        env:
+        - name: KAIJU_ADDRESS
+          value: kaiju-traces.default:2042
+        ports:
+        - containerPort: 5775
+          protocol: UDP
+        - containerPort: 6831
+          protocol: UDP
+        - containerPort: 6832
+          protocol: UDP
+        - containerPort: 5778
+          protocol: TCP
+        args: 
+        - --collector.host-port=jaeger-collector.default:14267
+        - --processor.jaeger-compact.server-queue-size=500000
+      - image: docker.io/telegraf:1.9.1
+        name: telegraf-sidecar
+        resources:
+          limits:
+            memory: 500Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: HOSTIP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        volumeMounts:
+        - name: config
+          mountPath: /etc/telegraf
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: config
+        configMap:
+          name: telegraf-sidecar

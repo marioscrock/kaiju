@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf-ds
+  namespace: monitoring
+  labels:
+    k8s-app: telegraf-ds
+data:
+  telegraf.conf: |+
+    [agent]
+      hostname = "$HOSTNAME"
+    [[outputs.socket_writer]]
+      address = "tcp://kaiju-metrics.default:9876"
+      keep_alive_period = "5m"
+      data_format = "json"
+      json_timestamp_units = "1ms"    
+    [[inputs.prometheus]]
+      urls = ["https://$HOSTIP:10250/metrics"]
+      bearer_token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      tls_ca = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+      insecure_skip_verify = true
+      [inputs.prometheus.tags]
+        plugin = "kubelet"
+    [[inputs.prometheus]]
+      urls = ["https://$HOSTIP:10250/metrics/cadvisor"]
+      bearer_token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      tls_ca = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+      insecure_skip_verify = true
+      [inputs.prometheus.tags]
+        plugin = "kubelet_cadvisor"
+---
+# Section: Daemonset
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: telegraf-ds
+  namespace: monitoring
+  labels:
+    k8s-app: telegraf-ds
+spec:
+  selector:
+    matchLabels:
+      name: telegraf-ds
+  template:
+    metadata:
+      labels:
+        name: telegraf-ds
+    spec:
+      serviceAccount: telegraf
+      serviceAccountName: telegraf
+      containers:
+      - name: telegraf-ds
+        image: docker.io/telegraf:1.9.1
+        resources:
+          limits:
+            memory: 500Mi
+          requests:
+            cpu: 200m
+            memory: 200Mi
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: HOSTIP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: "HOST_PROC"
+          value: "/rootfs/proc"
+        - name: "HOST_SYS"
+          value: "/rootfs/sys"
+        volumeMounts:
+        - name: varrunutmpro
+          mountPath: /var/run/utmp
+          readOnly: true
+        - name: sysro
+          mountPath: /rootfs/sys
+          readOnly: true
+        - name: procro
+          mountPath: /rootfs/proc
+          readOnly: true
+        - name: docker-socket
+          mountPath: /var/run/docker.sock
+        - name: config
+          mountPath: /etc/telegraf
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: sysro
+        hostPath:
+          path: /sys
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
+      - name: procro
+        hostPath:
+          path: /proc
+      - name: varrunutmpro
+        hostPath:
+          path: /var/run/utmp
+      - name: config
+        configMap:
+          name: telegraf-ds

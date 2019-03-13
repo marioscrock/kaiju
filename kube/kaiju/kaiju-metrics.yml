@@ -1,0 +1,65 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kaiju-metrics
+  labels:
+    app: kaiju
+    kaiju-infra: kaiju-metrics-deployment
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: kaiju
+        kaiju-infra: kaiju-metrics-pod
+    spec:
+      containers:
+      - image: kaiju:v1.0
+        name: kaiju-metrics
+        command: ["java"]
+        args: ["-jar","/usr/app/kaiju-0.0.1-SNAPSHOT-jar-with-dependencies.jar","metrics","1min"]
+        ports:
+        - containerPort: 9876
+          protocol: TCP
+        env:
+        - name: HL_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: config-hl
+              key: address
+        volumeMounts:
+          - name: stmts-volume
+            mountPath: /stmts
+        env:
+        - name: JAVA_OPTS
+          value: "-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+        resources:
+          requests:
+            memory: "250Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+      volumes:
+        - name: stmts-volume
+          configMap:
+            name: kaiju-metrics-stmts
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kaiju-metrics
+  labels:
+    app: kaiju
+    kaiju-infra: kaiju-metrics-service
+spec:
+  ports:
+  - name: kaiju-metrics-socket
+    port: 9876
+    protocol: TCP
+    targetPort: 9876
+  selector:
+    kaiju-infra: kaiju-metrics-pod
+  type: ClusterIP

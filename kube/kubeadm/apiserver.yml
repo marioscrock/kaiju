@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-app: kube-apiserver
+  name: kube-apiserver
+spec:
+  ports:
+  - name: metrics
+    port: 6443
+    protocol: TCP
+  selector:
+    component: kube-apiserver

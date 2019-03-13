@@ -1,0 +1,22 @@
+resources:
+  - kaiju-metrics.yml
+  - kaiju-logs.yml
+  - kaiju-traces.yml
+  - kaiju-hl.yml
+configMapGenerator:
+ - name: kaiju-metrics-stmts
+   files:
+   - metrics/statements.txt
+ - name: kaiju-logs-stmts
+   files:
+   - logs/statements.txt
+ - name: kaiju-traces-stmts
+   files:
+   - traces/statements.txt
+ - name: kaiju-hl-stmts
+   files:
+   - hl/statements.txt
+   - hl/events.txt
+ - name: config-hl
+   literals:
+   - address=kaiju-hl

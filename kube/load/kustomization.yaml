@@ -1,0 +1,4 @@
+namespace: hotrod
+
+resources:
+  - hotrod-load.yml

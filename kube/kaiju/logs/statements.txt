@@ -1,0 +1,2 @@
+listener:simple,name:COUNT LOGS=select count(*) from FLog#time(1min) output last every 1 min
+listener:simple,name:Pulled images=insert into Event select java.time.Instant.now().toEpochMilli() as timestamp, new {pulledImage=fields('event.involvedObject.name')} as payload, new{namespace=fields('event.involvedObject.namespace')} as context from FLog(fields('kubernetes.labels.app')='eventrouter' and fields('event.reason')='Pulled' and (fields('event.message').toString()).contains('pulled'))

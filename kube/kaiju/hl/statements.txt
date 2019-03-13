@@ -1,0 +1,3 @@
+#listener:simple,name:COUNT HL EVENTS=select count(*) from Event
+listener:simple,name:HighLatencySpan and ContainerHighCPUUsage same pod=select a.pod as pod from pattern [a=ContainerHighCPUUsage and b=HighLatencySpan(pod = a.pod) where timer:within(1min)]
+listener:simple,name:Anomaly after Pull=select a.pulledImage, b.namespace from pattern [every a=PulledImageEvent -> every b=ContainerAnomaly(namespace=a.namespace) where timer:within(10min)]

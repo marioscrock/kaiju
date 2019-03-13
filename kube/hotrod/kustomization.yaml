@@ -1,0 +1,13 @@
+namespace: hotrod
+bases:
+  - ../bases
+configMapGenerator:
+  - name: config-hotrod
+    literals:
+    - config-customer-delay=--fix-db-query-delay=1ms
+    - config-customer-mutex=--fix-disable-db-conn-mutex
+    - config-driver-get=--fix-redis-get-delay=1ms
+    - config-driver-find=--fix-redis-find-delay=1ms
+    - config-route=--fix-route-calc-delay=1ms
+    - config-frontend=--fix-route-worker-pool-size=1000
+

@@ -1,0 +1,10 @@
+bases:
+  - hotrod
+  - kaiju
+  - kube-state-metrics
+  - node-exporter
+  - kubeadm
+  - telegraf
+  - fluentd
+resources:
+  - ns.yml

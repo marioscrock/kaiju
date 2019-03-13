@@ -1,0 +1,9 @@
+namespace: kube-system
+
+resources: 
+  - controller-manager.yml
+  - scheduler.yml
+  - coredns.yml
+  - etcd.yml
+  - apiserver.yml
+  - eventrouter.yml

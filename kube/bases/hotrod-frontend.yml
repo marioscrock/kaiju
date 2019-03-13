@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hotrod-frontend
+  labels:
+    app: hotrod
+    hotrod-infra: frontend-service
+spec:
+  ports:
+  - name: frontend-service
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    hotrod-infra: frontend-pod
+  type: NodePort
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: hotrod-frontend
+  labels:
+    app: hotrod
+    hotrod-infra: frontend-deployment
+spec:
+  replicas: 3
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: hotrod
+        hotrod-infra: frontend-pod
+    spec:
+      containers:
+      - image: rim:hotrod-kube-v1.0
+        name: hotrod-frontend
+        command:
+        - ./main
+        args:
+        - --jaeger-agent.host-port=localhost:6831
+        - frontend
+        - --bind=0.0.0.0
+        - $(CONFIG)
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "0.2"
+          limits:
+            memory: "1Gi"
+            cpu: "0.2"
+        env:
+        - name: CONFIG
+          valueFrom:
+            configMapKeyRef:
+              name: config-hotrod
+              key: config-frontend
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      - image: kaiju-agent:kaiju
+        name: jaeger-agent
+        command:
+        - ./main
+        env:
+        - name: KAIJU_ADDRESS
+          value: kaiju-traces.default:2042
+        ports:
+        - containerPort: 5775
+          protocol: UDP
+        - containerPort: 6831
+          protocol: UDP
+        - containerPort: 6832
+          protocol: UDP
+        - containerPort: 5778
+          protocol: TCP
+        args: 
+        - --collector.host-port=jaeger-collector.default:14267
+        - --processor.jaeger-compact.server-queue-size=500000

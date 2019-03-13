@@ -1,0 +1,6 @@
+resources:
+  - hotrod-customer.yml
+  - hotrod-driver.yml
+  - hotrod-frontend.yml
+  - hotrod-route.yml
+  - telegraf-sidecar.yml

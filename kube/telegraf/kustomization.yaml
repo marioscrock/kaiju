@@ -1,0 +1,6 @@
+namespace: monitoring
+
+resources: 
+  - telegraf.yml
+  - telegraf-ds.yml
+  - rbac.yml

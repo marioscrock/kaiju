@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf-sidecar
+  labels:
+    k8s-app: telegraf
+data:
+  telegraf.conf: |+
+    [agent]
+      hostname = "$HOSTNAME"
+    [[outputs.socket_writer]]
+      address = "tcp://kaiju-metrics.default:9876"
+      keep_alive_period = "5m"
+      data_format = "json"
+      json_timestamp_units = "1ms"    
+    [[inputs.http]]
+      name_override = "hotrod-route"
+      urls = ["http://0.0.0.0:8083/debug/vars"]
+      fielddrop = ["memstats_*"]
+      method = "GET"
+      timeout = "5s"
+      data_format = "json"
+      [inputs.http.tags]
+        plugin = "hotrod-route"
+        hostname = "$HOSTNAME"
