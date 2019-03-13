@@ -20,12 +20,12 @@ public class HLMode implements Mode {
 	}
 
 	@Override
-	public void addStatements(EPAdministrator cepAdm, boolean parse) {
+	public void addStatements(EPAdministrator cepAdm, boolean parse) {	
 		
-		EPLFactory.parseHLEvents(cepAdm, "./stmts/events.txt");
-		
-		if (parse)
+		if (parse) {
+			EPLFactory.parseHLEvents(cepAdm, "./stmts/events.txt");
 			StatementParser.parseStatements(cepAdm, "./stmts/statements.txt", EsperHandler.config);
+		}
 				
 	}
 	
