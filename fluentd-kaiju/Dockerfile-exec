@@ -1,0 +1,16 @@
+FROM golang:1.11 AS build-env
+WORKDIR /app
+
+# Add the source code:
+ADD fluentdclient/ fluentdgo/
+
+# Build it:
+RUN cd fluentdgo; go build fluentdclient.go
+
+FROM marioscrock/fluentd-kube:latest
+RUN mkdir /fluentd/scripts
+COPY --from=build-env /app/fluentdgo/fluentdclient /fluentd/scripts/
+RUN chmod 755 /fluentd/scripts/fluentdclient
+RUN mkdir /etc/tmp-conf
+
+
