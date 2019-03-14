@@ -33,7 +33,7 @@ spec:
         hotrod-infra: driver-pod
     spec:
       containers:
-      - image: rim:hotrod-kube-v1.0
+      - image: marioscrock/rim:hotrod-kube-v1.0
         name: hotrod-driver
         command:
         - ./main
@@ -69,7 +69,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-      - image: kaiju-agent:kaiju
+      - image: marioscrock/kaiju-agent:kaiju
         name: jaeger-agent
         command:
         - ./main
