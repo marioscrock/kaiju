@@ -16,10 +16,10 @@ spec:
         kaiju-infra: kaiju-traces-pod
     spec:
       containers:
-      - image: kaiju:v1.0
+      - image: marioscrock/kaiju:v1.0
         name: kaiju-traces
         command: ["java"]
-        args: ["-jar","/usr/app/kaiju-0.0.1-SNAPSHOT-jar-with-dependencies.jar","traces","1min"]
+        args: ["-jar","/usr/app/kaiju-0.0.1-SNAPSHOT-jar-with-dependencies.jar","-m traces","-rt 1min"]
         ports:
         - containerPort: 2042
           protocol: TCP

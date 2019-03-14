@@ -16,10 +16,10 @@ spec:
         kaiju-infra: kaiju-hl-pod
     spec:
       containers:
-      - image: kaiju:v1.0
+      - image: marioscrock/kaiju:v1.0
         name: kaiju-hl
         command: ["java"]
-        args: ["-jar","/usr/app/kaiju-0.0.1-SNAPSHOT-jar-with-dependencies.jar","high-level","1min"]
+        args: ["-jar","/usr/app/kaiju-0.0.1-SNAPSHOT-jar-with-dependencies.jar","-m high-level","-rt 1min"]
         ports:
         - containerPort: 9876
           protocol: TCP

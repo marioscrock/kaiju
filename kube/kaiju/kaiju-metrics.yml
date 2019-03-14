@@ -16,10 +16,10 @@ spec:
         kaiju-infra: kaiju-metrics-pod
     spec:
       containers:
-      - image: kaiju:v1.0
+      - image: marioscrock/kaiju:v1.0
         name: kaiju-metrics
         command: ["java"]
-        args: ["-jar","/usr/app/kaiju-0.0.1-SNAPSHOT-jar-with-dependencies.jar","metrics","1min"]
+        args: ["-jar","/usr/app/kaiju-0.0.1-SNAPSHOT-jar-with-dependencies.jar","-m metrics","-rt 1min"]
         ports:
         - containerPort: 9876
           protocol: TCP
