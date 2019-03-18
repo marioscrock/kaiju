@@ -65,6 +65,8 @@ The `rim` folder contains a modified version of the [HotR.O.D.](https://github.c
 - enabling possibility to generate load tests through embedding of the [makerequests.js](https://github.com/marioscrock/makerequests.js) library;
 - instrumented with OpenTracing to report also Kubernetes metadata.
 
+For more details see [Rim](https://github.com/marioscrock/Rim) repository.
+
 ## `kube`
 
 An environment for experiments can be run downloading `kustomize` and setting up `kubectl` to communicate with a Kubernetes cluster. `kube` folder contains manifests.
