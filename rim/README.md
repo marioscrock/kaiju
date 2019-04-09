@@ -2,7 +2,7 @@
 
 #### Description 
 
-Modified version of the [HotR.O.D.] demo app (https://github.com/jaegertracing/jaeger/tree/v1.6.0/examples/hotrod) in Jaeger v1.6. Changes:
+Modified version of the [HotR.O.D.](https://github.com/jaegertracing/jaeger/tree/v1.6.0/examples/hotrod) demo app in Jaeger v1.6. Changes:
 - Add manifests for Kubernetes deployment
 - Enable further optimizations from command line
 - Integrate [makerequests.js](https://github.com/marioscrock/makerequests.js) library
