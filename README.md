@@ -1,12 +1,4 @@
 # Kaiju
-
-<!---
-The content of this repository is discussed in details in:
-```
-A Success Story of Event-Driven Observability in Production-Grade Container Orchestration
-Authors: Mario Scrocca, Riccardo Tommasini, Alessandro Margara and Emanuele Della Valle
-```
--->
   
 _Kaiju_ is an artifact based on the [Esper engine](http://www.espertech.com/) and implementing event-driven observability in container orchestration through Kubernetes.
 
