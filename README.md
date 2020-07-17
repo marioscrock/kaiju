@@ -2,6 +2,10 @@
   
 _Kaiju_ is an artifact based on the [Esper engine](http://www.espertech.com/) and implementing event-driven observability in container orchestration through Kubernetes.
 
+The content of this repository is discussed in details in:
+> Mario Scrocca, Riccardo Tommasini, Alessandro Margara, Emanuele Della Valle, and Sherif Sakr. 2020. _The Kaiju project: enabling event-driven observability_. In Proceedings of the 14th ACM International Conference on Distributed and Event-based Systems (DEBS ’20). Association for Computing Machinery, New York, NY, USA, 85–96. DOI:https://doi.org/10.1145/3401025.3401740
+
+
 Key aspects:
 - _Kaiju_ can process observations (i.e. metrics, logs and traces) as events in real-time
 - _Kaiju_ is an easily-pluggable solution for companies already implementing projects of the CNCF stack
